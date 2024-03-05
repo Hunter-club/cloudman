@@ -100,3 +100,7 @@ func DeleteRouterRule(commonParams *CommonParams, routerRule *RouterRule) (bool,
 	}
 	return true, nil
 }
+
+func GetSubJson(commonParams *CommonParams, subID string) {
+
+}

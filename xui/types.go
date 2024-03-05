@@ -36,6 +36,7 @@ type Inbound struct {
 func NewVmessTLSInbound(Remark string) *Inbound {
 	inboud := &Inbound{
 		Remark:   Remark,
+		Tag:      "inbound-0",
 		Protocol: "vmess",
 		Port:     rand.Intn(65535),
 		Enable:   true,
@@ -50,6 +51,7 @@ func NewVmessTLSInbound(Remark string) *Inbound {
 
 func NewVmessInbound(Remark string) *Inbound {
 	inboud := &Inbound{
+		Tag:      "inbound-0",
 		Remark:   Remark,
 		Protocol: "vmess",
 		Enable:   true,
@@ -66,9 +68,11 @@ func NewVmessInbound(Remark string) *Inbound {
 func GetInboundClient() string {
 	id := uuid.NewString()
 	email := uuid.NewString()[:9]
+	subId := uuid.NewString()[:16]
 	template := "{\n  \"clients\": [\n    {\n      \"id\": \"3aea0d2f-0fdd-424a-96e2-6d329a82c5a8\",\n      \"email\": \"9hybwkqp4\",\n      \"totalGB\": 0,\n      \"expiryTime\": 0,\n      \"enable\": true,\n      \"tgId\": \"\",\n      \"subId\": \"rrs3r602pg35j5om\",\n      \"reset\": 0\n    }\n  ]\n}"
 	res, _ := sjson.Set(template, "clients.0.id", id)
 	res, _ = sjson.Set(res, "clients.0.email", email)
+	res, _ = sjson.Set(res, "clients.0.subId", subId)
 	return res
 }
 
