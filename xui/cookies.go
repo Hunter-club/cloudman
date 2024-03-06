@@ -23,7 +23,6 @@ func NewCookiesUtils() *CookiesUtils {
 }
 
 func (u *CookiesUtils) GetCookies(commonParams *CommonParams) ([]*http.Cookie, error) {
-
 	url := commonParams.Url
 
 	u.lock.RLock()

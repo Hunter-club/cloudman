@@ -4,6 +4,7 @@ import (
 	"math/rand"
 
 	"github.com/google/uuid"
+	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
 
@@ -76,8 +77,11 @@ func GetInboundClient() string {
 	return res
 }
 
-type StreamSettings struct {
+func GetInboundSubId(inbound *Inbound) string {
+	return gjson.Get(inbound.Settings, "clients.0.subdId").String()
 }
+
+type StreamSettings struct{}
 
 type ClientTraffic struct {
 	Id         int    `json:"id" form:"id" gorm:"primaryKey;autoIncrement"`
