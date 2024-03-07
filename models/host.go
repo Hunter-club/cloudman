@@ -7,5 +7,5 @@ type Host struct {
 	Name      string `grom:"column:name"`
 	PrimaryIP string `gorm:"column:primary_ip"`
 	Zone      string `gorm:"column:zone"`
-	HostID    string `gorm:"column:host_id"`
+	HostID    string `gorm:"column:host_id;unique"`
 }

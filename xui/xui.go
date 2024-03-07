@@ -66,12 +66,12 @@ func GetInbound(commonParams *CommonParams) (*Inbound, error) {
 	inbound := make([]*Inbound, 0)
 
 	err = json.Unmarshal(resp.Bytes(), &inbound)
-
 	if err != nil {
 		return nil, err
 	}
 	return inbound[0], nil
 }
+
 func AddOutbound(commonParams *CommonParams, outbound *Outbound) (bool, error) {
 	req.DevMode()
 
