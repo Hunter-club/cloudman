@@ -45,6 +45,15 @@ func XUIConfigure(c echo.Context) (interface{}, error) {
 			return nil, err
 		}
 		result = append(result, *inbound)
+
+		//todo 对于分配成功的XUI面板，要进行设置
+		err = db.Model(&models.HostDeviceAllocate{}).Where(&models.HostDeviceAllocate{
+			OrderID: req.OrderID,
+			HostID:  host.HostID,
+		}).Update("is_allocate", true).Error
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return result, nil
@@ -81,7 +90,7 @@ func ConfigXraySingle(host *models.Host, isDomain, isTls bool) (*xui.Inbound, er
 	//todo 处理https的情况
 	commonParams := FindCommonParamsByIp("http://" + ip + ":" + config.Port)
 
-	if reflect.DeepEqual(commonParams.User, xui.User{}) {
+	if reflect.DeepEqual(*commonParams.User, xui.User{}) {
 		commonParams.User = &xui.User{
 			Password: "csh031027",
 			UserName: "csh0101",
@@ -91,21 +100,17 @@ func ConfigXraySingle(host *models.Host, isDomain, isTls bool) (*xui.Inbound, er
 	var inbound *xui.Inbound
 
 	remark := fmt.Sprintf("%s-%s", zone, host.PrimaryIP)
-	if !isTls {
-		inbound = xui.NewVmessInbound(remark)
-	} else {
-		inbound = xui.NewVmessTLSInbound(remark)
-	}
+	inbound = xui.NewVmessInbound(remark, isTls)
 
 	_, err = xui.AddInbound(commonParams, inbound)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = xui.AddOutbound(commonParams, &xui.Outbound{
+	outbound, err := xui.AddOutbound(commonParams, &xui.Outbound{
 		Protocol:    "freedom",
 		SendThrough: ip,
-		Tag:         "outbound-0",
+		Tag:         fmt.Sprintf("outbound-%d", inbound.Port),
 	})
 	if err != nil {
 		return nil, err
@@ -113,8 +118,8 @@ func ConfigXraySingle(host *models.Host, isDomain, isTls bool) (*xui.Inbound, er
 
 	_, err = xui.AddRouterRule(commonParams, &xui.RouterRule{
 		Type:        "field",
-		InboundTag:  []string{"inbound-0"},
-		OutboundTag: "outbound-0",
+		InboundTag:  []string{inbound.Tag},
+		OutboundTag: outbound.Tag,
 	})
 	if err != nil {
 		return nil, err

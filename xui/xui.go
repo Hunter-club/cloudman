@@ -3,8 +3,11 @@ package xui
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
+	"github.com/Hunter-club/cloudman/config"
 	"github.com/imroc/req/v3"
+	"github.com/tidwall/gjson"
 )
 
 type CommonParams struct {
@@ -65,26 +68,26 @@ func GetInbound(commonParams *CommonParams) (*Inbound, error) {
 
 	inbound := make([]*Inbound, 0)
 
-	err = json.Unmarshal(resp.Bytes(), &inbound)
+	err = json.Unmarshal([]byte(gjson.GetBytes(resp.Bytes(), "obj").String()), &inbound)
 	if err != nil {
 		return nil, err
 	}
 	return inbound[0], nil
 }
 
-func AddOutbound(commonParams *CommonParams, outbound *Outbound) (bool, error) {
+func AddOutbound(commonParams *CommonParams, outbound *Outbound) (*Outbound, error) {
 	req.DevMode()
 
 	cookies, err := globalCookieTool.GetCookies(commonParams)
 	if err != nil {
-		return false, err
+		return outbound, err
 	}
 
 	_, err = req.C().NewRequest().SetBody(outbound).SetCookies(cookies...).Post(commonParams.Url + "/xui/API/outbounds/add")
 	if err != nil {
-		return false, err
+		return outbound, err
 	}
-	return true, nil
+	return outbound, nil
 }
 
 func AddRouterRule(commonParams *CommonParams, routerRule *RouterRule) (bool, error) {
@@ -121,7 +124,9 @@ func GetSubJson(commonParams *CommonParams, subID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	resp, err := req.C().NewRequest().SetCookies(cookies...).SetPathParam("subID", subID).Get(commonParams.Url + "/{subID}")
+
+	subURL := commonParams.Url[:strings.LastIndex(commonParams.Url, ":")] + ":" + config.SubPort
+	resp, err := req.C().NewRequest().SetCookies(cookies...).SetPathParam("subID", subID).Get(subURL + "/sub/{subID}")
 	if err != nil {
 		return "", err
 	}

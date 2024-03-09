@@ -2,10 +2,10 @@ package handler
 
 import (
 	"errors"
-	"math/rand"
 
 	"github.com/Hunter-club/cloudman/database"
 	"github.com/Hunter-club/cloudman/models"
+	"github.com/Hunter-club/cloudman/pkg/kits"
 	"github.com/Hunter-club/cloudman/view"
 	"github.com/labstack/echo/v4"
 )
@@ -74,7 +74,8 @@ func getUnallocatedHosts(zone string) ([]models.Host, error) {
 }
 
 func selectRandomHosts(hosts []models.Host, n int) []models.Host {
-	rand.Shuffle(len(hosts), func(i, j int) {
+	rander := kits.GetRander()
+	rander.Shuffle(len(hosts), func(i, j int) {
 		hosts[i], hosts[j] = hosts[j], hosts[i]
 	})
 	if n > len(hosts) {

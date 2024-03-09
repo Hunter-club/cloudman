@@ -37,13 +37,13 @@ func AllocateResource(c echo.Context) (interface{}, error) {
 		}
 	}()
 
-	orderID := c.Param("order_id")
+	orderID := req.OrderID
 
 	saveTransfer := make([]*models.Transfer, 0)
 	hostTransfers := make([]*models.HostTransfer, 0)
 	for _, entry := range req.Entries {
-		commonParams := FindCommonParamsByIp(entry.IP)
-		if reflect.DeepEqual(commonParams.User, xui.User{}) {
+		commonParams := FindCommonParamsByIp("http://" + entry.TargetHost.Addr + ":" + config.Port)
+		if reflect.DeepEqual(*commonParams.User, xui.User{}) {
 			commonParams.User = &xui.User{
 				Password: "csh031027",
 				UserName: "csh0101",
@@ -62,8 +62,8 @@ func AllocateResource(c echo.Context) (interface{}, error) {
 		host := &models.Host{}
 
 		db.Model(&models.Host{}).Where(&models.Host{
-			PrimaryIP: entry.IP,
-		}).Select("host.*").Find(&host)
+			PrimaryIP: entry.TargetHost.Addr,
+		}).Find(&host)
 
 		transferID := uuid.NewString()
 		saveTransfer = append(saveTransfer, &models.Transfer{
@@ -106,7 +106,7 @@ func AllocateResource(c echo.Context) (interface{}, error) {
 	tempResp := struct {
 		SubUrl string `json:"sub_url"`
 	}{
-		SubUrl: fmt.Sprintf("%s:%s:%s", config.SubURLPrefix, "/sub", newSubID),
+		SubUrl: fmt.Sprintf("%s/%s/%s", config.SubURLPrefix, "/sub", newSubID),
 	}
 	return tempResp, nil
 }
@@ -117,7 +117,8 @@ func FindDomainByIP(ip string) string {
 
 func FindCommonParamsByIp(ip string) *xui.CommonParams {
 	return &xui.CommonParams{
-		Url: ip,
+		Url:  ip,
+		User: &xui.User{},
 	}
 }
 
@@ -127,12 +128,19 @@ func GetSubJson(commonParams *xui.CommonParams, subId string, Addr string, Port 
 		return "", err
 	}
 
-	decoded, err := base64.StdEncoding.DecodeString(subJson[8:]) // base64转换为json
+	decoded, err := base64.StdEncoding.DecodeString(subJson) // base64转换为json
 	if err != nil {
 		return "", err
 	}
 
+	decoded = decoded[8:]
+
 	var vmess view.Vmess
+
+	decoded, err = base64.StdEncoding.DecodeString(string(decoded)) // base64转换为json
+	if err != nil {
+		return "", err
+	}
 	err = json.Unmarshal([]byte(decoded), &vmess)
 	if err != nil {
 		fmt.Println("vmess convert error", err.Error())
@@ -149,15 +157,3 @@ func GetSubJson(commonParams *xui.CommonParams, subId string, Addr string, Port 
 
 	return encode, nil
 }
-
-// func getAllocatedHosts(db *gorm.DB, orderID string) ([]models.Host, error) {
-// 	var allocatedHosts []models.Host
-// 	if err := db.Model(&models.Host{}).
-// 		Joins("LEFT JOIN host_device_allocate ON host.id = host_device_allocate.host_id").
-// 		Where("host_device_allocate.order_id = ?", orderID).
-// 		Select("host.*").
-// 		Find(&allocatedHosts).Error; err != nil {
-// 		return nil, err
-// 	}
-// 	return allocatedHosts, nil
-// }

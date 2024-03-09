@@ -3,7 +3,6 @@ package kits
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 
 	probing "github.com/prometheus-community/pro-bing"
 )
@@ -25,8 +24,9 @@ func GetHealthTransferProxy(transferProxy map[string]string) (string, error) {
 	if len(proxies) == 0 {
 		return "", errors.New("no health proxy")
 	}
+	rander := GetRander()
 
-	index := rand.Intn(len(proxies))
+	index := rander.Intn(len(proxies))
 
 	return proxies[index], nil
 }

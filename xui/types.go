@@ -1,8 +1,9 @@
 package xui
 
 import (
-	"math/rand"
+	"fmt"
 
+	"github.com/Hunter-club/cloudman/pkg/kits"
 	"github.com/google/uuid"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
@@ -34,36 +35,31 @@ type Inbound struct {
 	Sniffing       string   `json:"sniffing" form:"sniffing"`
 }
 
-func NewVmessTLSInbound(Remark string) *Inbound {
-	inboud := &Inbound{
-		Remark:   Remark,
-		Tag:      "inbound-0",
-		Protocol: "vmess",
-		Port:     rand.Intn(65535),
-		Enable:   true,
-	}
-
-	inboud.Settings = GetInboundClient()
-	inboud.StreamSettings = `{\n  \"network\": \"tcp\",\n  \"security\": \"tls\",\n  \"externalProxy\": [],\n  \"tlsSettings\": {\n    \"serverName\": \"\",\n    \"minVersion\": \"1.2\",\n    \"maxVersion\": \"1.3\",\n    \"cipherSuites\": \"\",\n    \"rejectUnknownSni\": false,\n    \"certificates\": [\n      {\n        \"certificateFile\": \"/root/pem.pem\",\n        \"keyFile\": \"/root/key.key\",\n        \"ocspStapling\": 3600\n      }\n    ],\n    \"alpn\": [\n      \"h2\",\n      \"http/1.1\"\n    ],\n    \"settings\": {\n      \"allowInsecure\": false,\n      \"fingerprint\": \"\"\n    }\n  },\n  \"tcpSettings\": {\n    \"acceptProxyProtocol\": false,\n    \"header\": {\n      \"type\": \"none\"\n    }\n  }\n}`
-	inboud.Sniffing = `{\n  \"enabled\": true,\n  \"destOverride\": [\n    \"http\",\n    \"tls\",\n    \"quic\",\n    \"fakedns\"\n  ]\n}`
-
-	return inboud
-}
-
-func NewVmessInbound(Remark string) *Inbound {
-	inboud := &Inbound{
+func NewVmessInbound(Remark string, isTls bool) *Inbound {
+	rander := kits.GetRander()
+	inbound := &Inbound{
 		Tag:      "inbound-0",
 		Remark:   Remark,
 		Protocol: "vmess",
 		Enable:   true,
-		Port:     rand.Intn(65535),
+		Port:     rander.Intn(65535),
+	}
+	if inbound.Listen == "" || inbound.Listen == "0.0.0.0" || inbound.Listen == "::" || inbound.Listen == "::0" {
+		inbound.Tag = fmt.Sprintf("inbound-%v", inbound.Port)
+	} else {
+		inbound.Tag = fmt.Sprintf("inbound-%v:%v", inbound.Listen, inbound.Port)
+	}
+	if isTls {
+		inbound.Settings = GetInboundClient()
+		inbound.StreamSettings = `{\n  \"network\": \"tcp\",\n  \"security\": \"tls\",\n  \"externalProxy\": [],\n  \"tlsSettings\": {\n    \"serverName\": \"\",\n    \"minVersion\": \"1.2\",\n    \"maxVersion\": \"1.3\",\n    \"cipherSuites\": \"\",\n    \"rejectUnknownSni\": false,\n    \"certificates\": [\n      {\n        \"certificateFile\": \"/root/pem.pem\",\n        \"keyFile\": \"/root/key.key\",\n        \"ocspStapling\": 3600\n      }\n    ],\n    \"alpn\": [\n      \"h2\",\n      \"http/1.1\"\n    ],\n    \"settings\": {\n      \"allowInsecure\": false,\n      \"fingerprint\": \"\"\n    }\n  },\n  \"tcpSettings\": {\n    \"acceptProxyProtocol\": false,\n    \"header\": {\n      \"type\": \"none\"\n    }\n  }\n}`
+		inbound.Sniffing = `{\n  \"enabled\": true,\n  \"destOverride\": [\n    \"http\",\n    \"tls\",\n    \"quic\",\n    \"fakedns\"\n  ]\n}`
+	} else {
+		inbound.Settings = GetInboundClient()
+		inbound.StreamSettings = "{\n  \"network\": \"tcp\",\n  \"security\": \"none\",\n  \"externalProxy\": [],\n  \"tcpSettings\": {\n    \"acceptProxyProtocol\": false,\n    \"header\": {\n      \"type\": \"none\"\n    }\n  }\n}"
+		inbound.Sniffing = "{\n  \"enabled\": true,\n  \"destOverride\": [\n    \"http\",\n    \"tls\",\n    \"quic\",\n    \"fakedns\"\n  ]\n}"
 	}
 
-	inboud.Settings = GetInboundClient()
-	inboud.StreamSettings = "{\n  \"network\": \"tcp\",\n  \"security\": \"tls\",\n  \"externalProxy\": [],\n  \"tlsSettings\": {\n    \"serverName\": \"\",\n    \"minVersion\": \"1.2\",\n    \"maxVersion\": \"1.3\",\n    \"cipherSuites\": \"\",\n    \"rejectUnknownSni\": false,\n    \"certificates\": [\n      {\n        \"certificateFile\": \"/root/pem.pem\",\n        \"keyFile\": \"/root/key.key\",\n        \"ocspStapling\": 3600\n      }\n    ],\n    \"alpn\": [\n      \"h2\",\n      \"http/1.1\"\n    ],\n    \"settings\": {\n      \"allowInsecure\": false,\n      \"fingerprint\": \"\"\n    }\n  },\n  \"tcpSettings\": {\n    \"acceptProxyProtocol\": false,\n    \"header\": {\n      \"type\": \"none\"\n    }\n  }\n}"
-	inboud.Sniffing = "{\n  \"enabled\": true,\n  \"destOverride\": [\n    \"http\",\n    \"tls\",\n    \"quic\",\n    \"fakedns\"\n  ]\n}"
-
-	return inboud
+	return inbound
 }
 
 func GetInboundClient() string {
@@ -78,7 +74,7 @@ func GetInboundClient() string {
 }
 
 func GetInboundSubId(inbound *Inbound) string {
-	return gjson.Get(inbound.Settings, "clients.0.subdId").String()
+	return gjson.Get(inbound.Settings, "clients.0.subId").String()
 }
 
 type StreamSettings struct{}

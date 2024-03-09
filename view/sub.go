@@ -7,9 +7,13 @@ type SubRequest struct {
 }
 
 type SubConfigTransferEntry struct {
-	IP       string   `json:"ip"`
-	Transfer Transfer `json:"transfer"`
-	SubID    string   `json:"sub_id"`
+	Transfer   Transfer   `json:"transfer"`
+	TargetHost TargetHost `json:"target_host"`
+}
+
+type TargetHost struct {
+	Addr  string `json:"addr"`
+	SubID string `json:"sub_id"`
 }
 
 type Transfer struct {

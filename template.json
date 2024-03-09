@@ -1,0 +1,64 @@
+{
+  "success": true,
+  "msg": "",
+  "obj": [
+    {
+      "id": 1,
+      "up": 0,
+      "down": 0,
+      "total": 0,
+      "remark": "lan-127.0.0.1",
+      "enable": true,
+      "expiryTime": 0,
+      "clientStats": [
+        {
+          "id": 1,
+          "inboundId": 1,
+          "enable": true,
+          "email": "61adeb75-",
+          "up": 0,
+          "down": 0,
+          "expiryTime": 0,
+          "total": 0,
+          "reset": 0
+        }
+      ],
+      "listen": "",
+      "port": 19156,
+      "protocol": "vmess",
+      "settings": "{\n  \"clients\": [\n    {\n      \"id\": \"fb702c08-681c-4940-a48d-99d88ef29795\",\n      \"email\": \"61adeb75-\",\n      \"totalGB\": 0,\n      \"expiryTime\": 0,\n      \"enable\": true,\n      \"tgId\": \"\",\n      \"subId\": \"d1062ab2-fc24-4e\",\n      \"reset\": 0\n    }\n  ]\n}",
+      "streamSettings": "{\n  \"network\": \"tcp\",\n  \"security\": \"none\",\n  \"externalProxy\": [],\n  \"tcpSettings\": {\n    \"acceptProxyProtocol\": false,\n    \"header\": {\n      \"type\": \"none\"\n    }\n  }\n}",
+      "tag": "inbound-19156",
+      "sniffing": "{\n  \"enabled\": true,\n  \"destOverride\": [\n    \"http\",\n    \"tls\",\n    \"quic\",\n    \"fakedns\"\n  ]\n}"
+    },
+    {
+      "id": 2,
+      "up": 0,
+      "down": 0,
+      "total": 0,
+      "remark": "",
+      "enable": true,
+      "expiryTime": 0,
+      "clientStats": [
+        {
+          "id": 2,
+          "inboundId": 2,
+          "enable": true,
+          "email": "nbmchaobn",
+          "up": 0,
+          "down": 0,
+          "expiryTime": 0,
+          "total": 0,
+          "reset": 0
+        }
+      ],
+      "listen": "",
+      "port": 23414,
+      "protocol": "vmess",
+      "settings": "{\n  \"clients\": [\n    {\n      \"id\": \"b7a2ec54-97be-4b71-b07c-07bd8abd85bd\",\n      \"email\": \"nbmchaobn\",\n      \"totalGB\": 0,\n      \"expiryTime\": 0,\n      \"enable\": true,\n      \"tgId\": \"\",\n      \"subId\": \"ayl6vl6ilewsyk5h\",\n      \"reset\": 0\n    }\n  ]\n}",
+      "streamSettings": "",
+      "tag": "inbound-23414",
+      "sniffing": "{\n  \"enabled\": true,\n  \"destOverride\": [\n    \"http\",\n    \"tls\",\n    \"quic\",\n    \"fakedns\"\n  ]\n}"
+    }
+  ]
+}
