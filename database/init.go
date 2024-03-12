@@ -21,7 +21,7 @@ func init() {
 		Db = db
 		return
 	}
-	db, err := gorm.Open(sqlite.Open("/Users/csh0101/lab/go-playground/cloudman/db/gorm.sqlite"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("./gorm.sqlite"), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
