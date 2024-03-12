@@ -52,10 +52,11 @@ jobs:
             export GOARCH=386
             export CC=i686-linux-gnu-gcc
           fi
-          go build -o cloudman-release -v main.go
+          go build -o cloudman-release-server -v cmd/cloudman.go
+          go build -o cloudman-release-client -v client/main.go
          
           mkdir cloudman
-          cp xui-release cloudman/
+          cp cloudman-release cloudman/
           
           
       - name: Package
