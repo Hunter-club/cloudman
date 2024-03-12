@@ -39,7 +39,7 @@ func PreAllocateLine(c echo.Context) (interface{}, error) {
 
 func AllocateForZone(req *view.AllocateRequest, c echo.Context) error {
 	db := database.GetDB()
-	hostDeviceAllocate := make([]*models.HostDeviceAllocate, 0)
+	hostDeviceAllocate := make([]*models.HostOrderAllocate, 0)
 	for zone, quota := range req.Lines {
 		unallocatedHosts, err := getUnallocatedHosts(zone)
 		if err != nil {
@@ -50,7 +50,7 @@ func AllocateForZone(req *view.AllocateRequest, c echo.Context) error {
 		}
 		hosts := selectRandomHosts(unallocatedHosts, quota)
 		for _, host := range hosts {
-			hostDeviceAllocate = append(hostDeviceAllocate, &models.HostDeviceAllocate{
+			hostDeviceAllocate = append(hostDeviceAllocate, &models.HostOrderAllocate{
 				HostID:  host.HostID,
 				OrderID: req.OrderID,
 			})
@@ -63,8 +63,8 @@ func getUnallocatedHosts(zone string) ([]models.Host, error) {
 	db := database.GetDB()
 	var unallocatedHosts []models.Host
 	if err := db.Model(&models.Host{}).
-		Joins("LEFT JOIN host_device_allocates ON hosts.host_id = host_device_allocates.host_id").
-		Where("host_device_allocates.host_id IS NULL").
+		Joins("LEFT JOIN host_order_allocates ON hosts.host_id = host_order_allocates.host_id").
+		Where("host_order_allocates.host_id IS NULL").
 		Where("hosts.zone = ?", zone).
 		Select("hosts.*").
 		Find(&unallocatedHosts).Error; err != nil {

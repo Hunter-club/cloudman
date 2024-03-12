@@ -21,13 +21,14 @@ func RunServer() {
 			if secret == "FXf4nzFzax8A.k-a" {
 				return next(c)
 			} else {
-				return c.JSON(http.StatusUnauthorized, "")
+				return c.JSON(http.StatusUnauthorized, "unauthorizated")
 			}
 		}
 	})
-	e.POST("/api/v1/sub", Handler(handler.AllocateResource))
+	e.POST("/api/v1/sub", Handler(handler.GenSub))
 	e.POST("/api/v1/xray", Handler(handler.XUIConfigure))
 	e.POST("/api/v1/line", Handler(handler.PreAllocateLine))
+	e.POST("/api/v1/host", Handler(handler.HostImport))
 	go func() {
 		e := echo.New()
 		NewSub(e)

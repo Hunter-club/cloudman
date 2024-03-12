@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 
@@ -16,7 +17,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func AllocateResource(c echo.Context) (interface{}, error) {
+func GenSub(c echo.Context) (interface{}, error) {
 
 	var err error
 	req := &view.SubRequest{}
@@ -42,7 +43,29 @@ func AllocateResource(c echo.Context) (interface{}, error) {
 	saveTransfer := make([]*models.Transfer, 0)
 	hostTransfers := make([]*models.HostTransfer, 0)
 	for _, entry := range req.Entries {
-		commonParams := FindCommonParamsByIp("http://" + entry.TargetHost.Addr + ":" + config.Port)
+
+		host := &models.Host{}
+
+		db.Model(&models.Host{}).Where(&models.Host{
+			PrimaryIP: entry.TargetHost.Addr,
+		}).Find(&host)
+
+		var url string
+		if host.Domain != "" {
+			url = config.Protocol + host.Domain
+		} else {
+			if os.Getenv("DEBUG") != "" {
+				url = config.Protocol + "localhost" + ":" + config.Port
+			} else {
+				url = config.Protocol + host.PrimaryIP + ":" + config.Port
+			}
+		}
+
+		commonParams := &xui.CommonParams{
+			Url:  url,
+			User: &xui.User{},
+		}
+
 		if reflect.DeepEqual(*commonParams.User, xui.User{}) {
 			commonParams.User = &xui.User{
 				Password: "csh031027",
@@ -58,12 +81,6 @@ func AllocateResource(c echo.Context) (interface{}, error) {
 			return nil, err
 		}
 		res = append(res, vmess)
-
-		host := &models.Host{}
-
-		db.Model(&models.Host{}).Where(&models.Host{
-			PrimaryIP: entry.TargetHost.Addr,
-		}).Find(&host)
 
 		transferID := uuid.NewString()
 		saveTransfer = append(saveTransfer, &models.Transfer{
@@ -106,20 +123,9 @@ func AllocateResource(c echo.Context) (interface{}, error) {
 	tempResp := struct {
 		SubUrl string `json:"sub_url"`
 	}{
-		SubUrl: fmt.Sprintf("%s/%s/%s", config.SubURLPrefix, "/sub", newSubID),
+		SubUrl: fmt.Sprintf("%s/%s/%s", config.SubURLPrefix, "sub", newSubID),
 	}
 	return tempResp, nil
-}
-
-func FindDomainByIP(ip string) string {
-	return ""
-}
-
-func FindCommonParamsByIp(ip string) *xui.CommonParams {
-	return &xui.CommonParams{
-		Url:  ip,
-		User: &xui.User{},
-	}
 }
 
 func GetSubJson(commonParams *xui.CommonParams, subId string, Addr string, Port int) (string, error) {

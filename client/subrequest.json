@@ -1,0 +1,16 @@
+{
+ "order_id": "xxx",
+ "model": "",
+ "entries": [
+  {
+   "transfer": {
+    "addr": "127.0.0.1",
+    "port": 7890
+   },
+   "target_host": {
+    "addr": "47.63.24.22",
+    "sub_id": "cc93420b-36ff-4b"
+   }
+  }
+ ]
+}

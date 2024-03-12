@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 
 	"github.com/Hunter-club/cloudman/config"
@@ -47,7 +48,7 @@ func XUIConfigure(c echo.Context) (interface{}, error) {
 		result = append(result, *inbound)
 
 		//todo 对于分配成功的XUI面板，要进行设置
-		err = db.Model(&models.HostDeviceAllocate{}).Where(&models.HostDeviceAllocate{
+		err = db.Model(&models.HostOrderAllocate{}).Where(&models.HostOrderAllocate{
 			OrderID: req.OrderID,
 			HostID:  host.HostID,
 		}).Update("is_allocate", true).Error
@@ -60,8 +61,8 @@ func XUIConfigure(c echo.Context) (interface{}, error) {
 }
 
 func SelectIPByOrderID(db *gorm.DB, orderID string) ([]*models.Host, error) {
-	var hostDeviceAllocates []models.HostDeviceAllocate
-	db.Where(&models.HostDeviceAllocate{
+	var hostDeviceAllocates []models.HostOrderAllocate
+	db.Where(&models.HostOrderAllocate{
 		OrderID:    orderID,
 		IsAllocate: false,
 	}).Find(&hostDeviceAllocates)
@@ -80,16 +81,22 @@ func SelectIPByOrderID(db *gorm.DB, orderID string) ([]*models.Host, error) {
 
 func ConfigXraySingle(host *models.Host, isDomain, isTls bool) (*xui.Inbound, error) {
 	var err error
-	ip := host.PrimaryIP
 	zone := host.Zone
-
-	if isDomain {
-		ip = FindDomainByIP(ip)
+	var url string
+	if host.Domain != "" {
+		url = config.Protocol + host.Domain
+	} else {
+		if os.Getenv("DEBUG") != "" {
+			url = config.Protocol + "localhost" + ":" + config.Port
+		} else {
+			url = config.Protocol + host.PrimaryIP + ":" + config.Port
+		}
 	}
 
-	//todo 处理https的情况
-	commonParams := FindCommonParamsByIp("http://" + ip + ":" + config.Port)
-
+	commonParams := &xui.CommonParams{
+		Url:  url,
+		User: &xui.User{},
+	}
 	if reflect.DeepEqual(*commonParams.User, xui.User{}) {
 		commonParams.User = &xui.User{
 			Password: "csh031027",
@@ -109,7 +116,7 @@ func ConfigXraySingle(host *models.Host, isDomain, isTls bool) (*xui.Inbound, er
 
 	outbound, err := xui.AddOutbound(commonParams, &xui.Outbound{
 		Protocol:    "freedom",
-		SendThrough: ip,
+		SendThrough: host.PrimaryIP,
 		Tag:         fmt.Sprintf("outbound-%d", inbound.Port),
 	})
 	if err != nil {

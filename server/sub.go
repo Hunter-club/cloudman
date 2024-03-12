@@ -11,5 +11,6 @@ func NewSub(e *echo.Echo) {
 		handler.Sub(c)
 		return nil
 	})
+	e.POST("/sub/delete", Handler(handler.DeleteSub))
 	e.Start(":9999")
 }

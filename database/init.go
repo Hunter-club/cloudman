@@ -26,7 +26,7 @@ func init() {
 		panic(err)
 	}
 	Db = db
-	err = Db.AutoMigrate(&models.Host{}, &models.HostTransfer{}, &models.HostDeviceAllocate{}, &models.OrderSub{}, &models.Transfer{})
+	err = Db.AutoMigrate(&models.Host{}, &models.HostTransfer{}, &models.HostOrderAllocate{}, &models.OrderSub{}, &models.Transfer{})
 	if err != nil {
 		panic(err)
 	}

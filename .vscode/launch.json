@@ -9,7 +9,11 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/cloudman.go"
+            "program": "${workspaceFolder}/cmd/cloudman.go",
+            "env": {
+                "DEBUG":"true",
+                "PROTOCOL": "http://"
+            }
         }
     ]
 }
