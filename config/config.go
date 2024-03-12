@@ -9,4 +9,7 @@ var Protocol string
 
 func init() {
 	Protocol = os.Getenv("PROTOCOL")
+	SubURLPrefix = os.Getenv("SUB_URL_PREFIX")
+	SubPort = os.Getenv("SUB_PORT")
+	Port = os.Getenv("PORT")
 }
