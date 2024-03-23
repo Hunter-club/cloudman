@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,7 +17,8 @@ import (
 )
 
 var (
-	cloudmanURL string = os.Getenv("CLOUDMAN_URL")
+	// cloudmanURL string = os.Getenv("CLOUDMAN_URL")
+	cloudmanURL string = "http://localhost:8080"
 )
 
 func main() {
@@ -29,6 +31,7 @@ func main() {
 	cmd.AddCommand(PreAllocateLineCommand())
 	cmd.AddCommand(ConfigXuiCommand())
 	cmd.AddCommand(GenSubCommand())
+	cmd.AddCommand(ImportHostCommand())
 
 	err := cmd.Execute()
 	if err != nil {
@@ -128,11 +131,15 @@ func ConfigXuiCommand() *cobra.Command {
 			for _, inbound := range inbounds {
 				subID := xui.GetInboundSubId(&inbound)
 				addr := inbound.Remark[strings.Index(inbound.Remark, "-")+1:]
-				fmt.Printf("addr: %s, subid: %s\n", addr, subID)
+				// 拿到端口
+				port := inbound.Tag[strings.Index(inbound.Tag, "-")+1:]
+				fmt.Printf("addr: %s, subid: %s port: %s \n", addr, subID, port)
 				results.Entries = append(results.Entries, view.SubConfigTransferEntry{
-					Transfer: view.Transfer{
-						Addr: "127.0.0.1",
-						Port: 7890,
+					Transfer: []view.Transfer{
+						{
+							Addr: "",
+							Port: 0,
+						},
 					},
 					TargetHost: view.TargetHost{
 						Addr:  addr,
@@ -188,6 +195,48 @@ func GenSubCommand() *cobra.Command {
 	}
 	return cmd
 
+}
+
+// 导入机器的命令
+func ImportHostCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "import_host",
+		Run: func(cmd *cobra.Command, args []string) {
+
+			f, err := os.OpenFile("hosts.csv", os.O_RDONLY, os.ModePerm)
+			if err != nil {
+				panic(err)
+			}
+
+			defer f.Close()
+
+			reader := csv.NewReader(f)
+			content, err := reader.ReadAll()
+			if err != nil {
+				panic(err)
+			}
+			req := view.HostImportRequest{
+				Hosts: make([]view.HostItem, 0),
+			}
+			// 第一个是HostName,第二个
+			for _, host := range content {
+				req.Hosts = append(req.Hosts, view.HostItem{
+					Name:      host[0],
+					PrimaryIP: host[1],
+					Zone:      host[2],
+					Domain:    host[3],
+				})
+			}
+
+			client := GetClient()
+			resp, err := client.NewRequest().SetBody(req).Post("/api/v1/host")
+			if err != nil {
+				panic(err)
+			}
+			_ = resp
+		},
+	}
+	return cmd
 }
 
 func GetClient() *req.Client {

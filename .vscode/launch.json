@@ -11,8 +11,9 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/cloudman.go",
             "env": {
-                "DEBUG":"true",
-                "PROTOCOL": "http://"
+                "DEBUG": "true",
+                "PROTOCOL": "http://",
+                "MODE": ""
             }
         }
     ]

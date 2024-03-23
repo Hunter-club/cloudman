@@ -7,7 +7,7 @@ type SubRequest struct {
 }
 
 type SubConfigTransferEntry struct {
-	Transfer   Transfer   `json:"transfer"`
+	Transfer   []Transfer `json:"transfer"`
 	TargetHost TargetHost `json:"target_host"`
 }
 

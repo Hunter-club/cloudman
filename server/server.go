@@ -1,7 +1,9 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Hunter-club/cloudman/handler"
 	"github.com/labstack/echo/v4"
@@ -33,5 +35,16 @@ func RunServer() {
 		e := echo.New()
 		NewSub(e)
 	}()
+	ticker := time.NewTicker(time.Second * 300)
+	go func() {
+		for {
+			<-ticker.C
+			err := handler.CheckSubJsonV2()
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}()
 	e.Logger.Fatal(e.Start(":8080"))
+
 }

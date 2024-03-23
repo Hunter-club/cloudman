@@ -3,6 +3,7 @@ package kits
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	probing "github.com/prometheus-community/pro-bing"
 )
@@ -38,12 +39,14 @@ func PingHealth(addr string) (bool, error) {
 		return false, err
 	}
 
+	p.Timeout = time.Second * 5
+
 	p.OnFinish = func(s *probing.Statistics) {
 		if s.PacketLoss <= 0.3 {
 			health = true
 		}
 	}
-	p.Count = 5
+	p.Count = 1
 
 	err = p.Run()
 	if err != nil {

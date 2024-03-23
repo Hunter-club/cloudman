@@ -8,8 +8,16 @@ var SubPort = "2096"
 var Protocol string
 
 func init() {
-	Protocol = os.Getenv("PROTOCOL")
-	SubURLPrefix = os.Getenv("SUB_URL_PREFIX")
-	SubPort = os.Getenv("SUB_PORT")
-	Port = os.Getenv("PORT")
+	if os.Getenv("PROTOCOL") != "" {
+		Protocol = os.Getenv("PROTOCOL")
+	}
+	if os.Getenv("SUB_URL_PREFIX") != "" {
+		SubURLPrefix = os.Getenv("SUB_URL_PREFIX")
+	}
+	if os.Getenv("SUB_PORT") != "" {
+		SubPort = os.Getenv("SUB_PORT")
+	}
+	if os.Getenv("PORT") != "" {
+		Port = os.Getenv("PORT")
+	}
 }
